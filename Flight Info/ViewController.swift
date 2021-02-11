@@ -46,7 +46,7 @@ class ViewController: UIViewController {
   
   //MARK: custom methods
   
-  func changeFlight(to data: FlightData) {
+  func changeFlight(to data: FlightData, animated: Bool = false) {
     
     // populate the UI with the next flight's data
     summary.text = data.summary
@@ -55,13 +55,37 @@ class ViewController: UIViewController {
     departingFrom.text = data.departingFrom
     arrivingTo.text = data.arrivingTo
     flightStatus.text = data.flightStatus
-    bgImageView.image = UIImage(named: data.weatherImageName)
-    snowView.isHidden = !data.showWeatherEffects
+    if animated {
+      fade(imageView: bgImageView,
+        toImage: UIImage(named: data.weatherImageName)!,
+        showEffects: data.showWeatherEffects)
+    } else {
+      bgImageView.image = UIImage(named: data.weatherImageName)
+      snowView.isHidden = !data.showWeatherEffects
+    }
     
     // schedule next flight
     delay(seconds: 3.0) {
-      self.changeFlight(to: data.isTakingOff ? parisToRome : londonToParis)
+      self.changeFlight(to: data.isTakingOff ? parisToRome : londonToParis, animated: true)
     }
+  }
+
+  func fade(imageView: UIImageView, toImage: UIImage,
+            showEffects: Bool) {
+    UIView.transition(with: imageView, duration: 1.0,
+      options: .transitionCrossDissolve,
+      animations: {
+        imageView.image = toImage
+      },
+      completion: nil
+    )
+    UIView.animate(withDuration: 1.0, delay: 0.0,
+      options: .curveEaseOut,
+      animations: {
+        self.snowView.alpha = showEffects ? 1.0 : 0.0
+      },
+      completion: nil
+    )
   }
 
 }
