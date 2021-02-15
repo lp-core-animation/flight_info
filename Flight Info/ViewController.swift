@@ -7,7 +7,7 @@ func delay(seconds: Double, completion: @escaping ()-> Void) {
 }
 
 class ViewController: UIViewController {
-  
+
   @IBOutlet var bgImageView: UIImageView!
   
   @IBOutlet var summaryIcon: UIImageView!
@@ -23,6 +23,11 @@ class ViewController: UIViewController {
   @IBOutlet var statusBanner: UIImageView!
   
   var snowView: SnowView!
+
+  enum AnimationDirection: Int {
+    case positive = 1
+    case negative = -1
+  }
   
   //MARK: view controller methods
   
@@ -45,23 +50,51 @@ class ViewController: UIViewController {
   }
   
   //MARK: custom methods
+
+  func cubeTransition(label: UILabel, text: String, direction: AnimationDirection) {
+    let auxLabel = UILabel(frame: label.frame)
+    auxLabel.text = text
+    auxLabel.font = label.font
+    auxLabel.textAlignment = label.textAlignment
+    auxLabel.textColor = label.textColor
+    auxLabel.backgroundColor = label.backgroundColor
+
+    let auxLabelOffset = CGFloat(direction.rawValue) * label.frame.size.height / 2
+    auxLabel.transform = CGAffineTransform(translationX: 0.0, y: auxLabelOffset)
+      .scaledBy(x: 1.0, y: 0.1)
+
+    label.superview?.addSubview(auxLabel)
+
+    UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseOut, animations: {
+      auxLabel.transform = .identity
+      label.transform = CGAffineTransform(translationX: 0.0, y: -auxLabelOffset)
+        .scaledBy(x: 1.0, y: 0.1)
+    }, completion: { _ in
+      label.text = auxLabel.text
+      label.transform = .identity
+      auxLabel.removeFromSuperview()
+    })
+  }
   
   func changeFlight(to data: FlightData, animated: Bool = false) {
     
     // populate the UI with the next flight's data
     summary.text = data.summary
-    flightNr.text = data.flightNr
-    gateNr.text = data.gateNr
-    departingFrom.text = data.departingFrom
-    arrivingTo.text = data.arrivingTo
     flightStatus.text = data.flightStatus
     if animated {
       fade(imageView: bgImageView,
         toImage: UIImage(named: data.weatherImageName)!,
         showEffects: data.showWeatherEffects)
+
+      let direction: AnimationDirection = data.isTakingOff ? .positive : .negative
+      cubeTransition(label: flightNr, text: data.flightNr, direction: direction)
     } else {
       bgImageView.image = UIImage(named: data.weatherImageName)
       snowView.isHidden = !data.showWeatherEffects
+      flightNr.text = data.flightNr
+      gateNr.text = data.gateNr
+      departingFrom.text = data.departingFrom
+      arrivingTo.text = data.arrivingTo
     }
     
     // schedule next flight
