@@ -132,7 +132,6 @@ class ViewController: UIViewController {
   func changeFlight(to data: FlightData, animated: Bool = false) {
     
     // populate the UI with the next flight's data
-    flightStatus.text = data.flightStatus
     if animated {
       summarySwitch(to: data.summary)
       planeDepart()
@@ -155,6 +154,7 @@ class ViewController: UIViewController {
         offset: offsetArriving)
       cubeTransition(label: flightStatus, text: data.flightStatus,  direction: direction)
     } else {
+      flightStatus.text = data.flightStatus
       summary.text = data.summary
       bgImageView.image = UIImage(named: data.weatherImageName)
       snowView.isHidden = !data.showWeatherEffects
